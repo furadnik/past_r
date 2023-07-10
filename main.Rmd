@@ -1,4 +1,6 @@
 ---
+title: Statistická práce
+author: Filip Úradník
 output: html_document
 ---
 
@@ -17,3 +19,5 @@ plot(cars)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+Also, this is a test for math: $\frac 2\pi$.
