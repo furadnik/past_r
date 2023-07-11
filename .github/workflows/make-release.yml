@@ -10,7 +10,7 @@ jobs:
       - name: Install R
         run: sudo apt-get install -y r-base-core
       - name: Install Rmd
-        run: R -e 'install.packages("rmarkdown", repos = "cloud.r-project.org")'
+        run: sudo R -e 'install.packages("rmarkdown", repos = "cloud.r-project.org")'
       - name: Set up Git repository
         uses: actions/checkout@v2
       - name: Render the document.
