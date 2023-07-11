@@ -8,9 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install R
-        run: apt install r-base-core
+        run: sudo apt-get install -y r-base-core
       - name: Install Rmd
-        run: R -e 'install.packages("rmarkdown")'
+        run: R -e 'install.packages("rmarkdown", repos = "cloud.r-project.org")'
       - name: Set up Git repository
         uses: actions/checkout@v2
       - name: Render the document.
