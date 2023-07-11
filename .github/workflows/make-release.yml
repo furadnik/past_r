@@ -1,0 +1,26 @@
+name: Build Rmd document.
+on:
+  push:
+    branches:
+      - "master"
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install R
+        run: apt install r-base-core
+      - name: Install Rmd
+        run: R -e 'install.packages("rmarkdown")'
+      - name: Set up Git repository
+        uses: actions/checkout@v2
+      - name: Render the document.
+        run: make
+      - name: Rename
+        run: mv main.html uradnik_past.html
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: "Automatic Release"
+          files: uradnik_past.html
