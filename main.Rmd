@@ -1,23 +1,74 @@
 ---
-title: Statistická práce
+title: Statistická práce -- Víno
 author: Filip Úradník
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see .
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Budeme zkoumat víno.
+Speciálně nás bude zajímat, zda se pH vína v datech dostupných [zde](https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009) řídí normálním rozdělením.
 
 ```{r}
-summary(cars)
+# parametry
+n <- 20
+alpha <- 0.05
+group_range <- 0.05
+file_path <- "winequality-red.csv"
 ```
 
-You can also embed plots, for example:
+Budeme provádět $\chi^2$-test s hodnotou $\alpha = `r alpha`$ a s `r n-1` stupni volnosti.
 
-```{r, echo=FALSE}
-plot(cars)
+Nejprve načteme data o víně.
+```{r}
+data <- read.csv(file_path)$pH
+l <- length(data)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Zjistíme o nich základní informace:
+```{r}
+d_mu <- mean(data)
+d_var <- var(data)
+d_sde <- sd(data)
+summary(data)
+hist(data)
+```
 
-Also, this is a test for math: $\frac 2\pi$.
+Vypadají, jako že by mohla mít normální rozdělení.
+Rozdělíme je do `r n` skupin:
+```{r}
+d_group_freq <- 1:n
+
+d_group_freq[1] <- sum(data < d_mu - (n / 2 - 1) * group_range)
+d_group_freq[n] <- sum(data >= d_mu + (n / 2 - 1) * group_range)
+for (i in (2:n - 1)) {
+        d_group_freq[i] <- sum(data >= d_mu - (n / 2 - i + 1) * group_range &
+                data < d_mu - (n / 2 - i) * group_range)
+}
+plot(d_group_freq)
+```
+
+Nyní vygenerujeme ideální frekvence pro normální rozdělení se stejným $\mu = `r d_mu`$ a $\sigma^2 = `r d_var`$.
+```{r}
+n_group_freq <- (1:n)
+n_group_freq[1] <- l * pnorm(d_mu - (n / 2 - 1) * group_range, d_mu, d_sde)
+n_group_freq[n] <- l * pnorm(d_mu - (n / 2 - 1) * group_range, d_mu, d_sde)
+for (i in (2:n - 1)) {
+        p_lower <- pnorm(d_mu - (n / 2 - i + 1) * group_range, d_mu, d_sde)
+        p_upper <- pnorm(d_mu - (n / 2 - i) * group_range, d_mu, d_sde)
+        n_group_freq[i] <- l * (p_upper - p_lower)
+}
+plot(n_group_freq)
+```
+
+Chybí už jen spočítat $\chi^2$:
+```{r}
+chisq <- 0
+for (i in (1:n)) {
+        sq_dif <- (d_group_freq[i] - n_group_freq[i])^2
+        chisq <- chisq + sq_dif / n_group_freq[i]
+}
+```
+Vyšlo nám $\chi^2 = `r chisq`$.
+Protože bereme $\alpha = `r alpha`$ a máme $`r n-1`$ stupňů volnosti,
+je kritická hodnota $`r qchisq(1-alpha, n-1)`$.
+Naši hypotézu tedy musíme zamítnout.

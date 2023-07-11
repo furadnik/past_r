@@ -1,7 +1,7 @@
 all: main.html
 
 clean:
-	rm -f *.html
+	rm -f *.html *.log
 
 %.html: %.Rmd
 	Rscript -e 'rmarkdown::render("$<")'
